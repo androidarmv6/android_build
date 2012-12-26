@@ -58,6 +58,8 @@ PRODUCT_PACKAGES += \
     librs_jni
 
 PRODUCT_PACKAGES += \
+    audio.primary.default \
+    audio_policy.default \
     local_time.default \
     power.default
 
