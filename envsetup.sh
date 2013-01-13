@@ -1345,6 +1345,50 @@ function aospremote()
 }
 export -f aospremote
 
+
+function updatenotes() {
+    if [ ! -d .git ]
+    then
+        echo .git directory not found. Please run this from the root directory of the Android repository you wish to set up.
+    fi
+    GERRIT_REMOTE=$(cat .git/config  | grep git://github.com | awk '{ print $NF }' | sed s#git://github.com/##g)
+    if [ -z "$GERRIT_REMOTE" ]
+    then
+        GERRIT_REMOTE=$(cat .git/config  | grep http://github.com | awk '{ print $NF }' | sed s#http://github.com/##g)
+        if [ -z "$GERRIT_REMOTE" ]
+        then
+          echo Unable to set up the git remote, are you in the root of the repo?
+          return 0
+        fi
+    fi
+    pwd
+    ISANDROIDARMV6_REPO=$(echo $GERRIT_REMOTE | grep androidarmv6 | awk '{ print $NF }' | sed s#git://github.com/##g | sed s#http://github.com/##g)
+    if [ -z "$ISANDROIDARMV6_REPO" ]
+    then
+        echo "I am not a androidarmv6 project."
+    else
+        cmremote
+        githubssh
+        git fetch cmremote refs/notes/review:refs/notes/review
+        git push githubssh refs/notes/review:refs/notes/review
+        echo "All notes were updated."
+    fi
+}
+
+export -f updatenotes
+
+function updateallnotes() {
+  repo forall -c '
+  if [ "$REPO_REMOTE" == "github" ]
+  then
+    updatenotes
+  fi
+  '
+}
+
+export -f updateallnotes
+
+
 function installboot()
 {
     if [ ! -e "$OUT/recovery/root/etc/recovery.fstab" ];
