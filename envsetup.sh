@@ -1176,16 +1176,128 @@ function cmremote()
           return 0
         fi
     fi
-    CMUSER=`git config --get review.review.cyanogenmod.com.username`
+    CMUSER=`git config --get review.genetics.github.com.username`
     if [ -z "$CMUSER" ]
     then
-        git remote add cmremote ssh://review.cyanogenmod.com:29418/$GERRIT_REMOTE
+        git remote add cmremote ssh://genetics.github.com:29418/$GERRIT_REMOTE
     else
-        git remote add cmremote ssh://$CMUSER@review.cyanogenmod.com:29418/$GERRIT_REMOTE
+        git remote add cmremote ssh://$CMUSER@genetics.github.com:29418/$GERRIT_REMOTE
     fi
     echo You can now push to "cmremote".
 }
 export -f cmremote
+
+function githubssh()
+{
+    git remote rm githubssh 2> /dev/null
+    if [ ! -d .git ]
+    then
+        echo .git directory not found. Please run this from the root directory of the Android repository you wish to set up.
+    fi
+    GERRIT_REMOTE=$(cat .git/config  | grep git://github.com | awk '{ print $NF }' | sed s#git://github.com/##g)
+    if [ -z "$GERRIT_REMOTE" ]
+    then
+        GERRIT_REMOTE=$(cat .git/config  | grep http://github.com | awk '{ print $NF }' | sed s#http://github.com/##g)
+        if [ -z "$GERRIT_REMOTE" ]
+        then
+          echo Unable to set up the git remote, are you in the root of the repo?
+          return 0
+        fi
+    fi
+    git remote add githubssh git@github.com:$GERRIT_REMOTE.git
+    echo You can now push to "githubssh".
+}
+export -f githubssh
+
+function aospremote()
+{
+    git remote rm aosp 2> /dev/null
+    if [ ! -d .git ]
+    then
+        echo .git directory not found. Please run this from the root directory of the Android repository you wish to set up.
+    fi
+    PROJECT=`pwd | sed s#$ANDROID_BUILD_TOP/##g`
+    if (echo $PROJECT | grep -qv "^device")
+    then
+        PFX="platform/"
+    fi
+    git remote add aosp https://android.googlesource.com/$PFX$PROJECT
+    echo "Remote 'aosp' created"
+}
+export -f aospremote
+
+function installboot()
+{
+    if [ ! -e "$OUT/recovery/root/etc/recovery.fstab" ];
+    then
+        echo "No recovery.fstab found. Build recovery first."
+        return 1
+    fi
+    if [ ! -e "$OUT/boot.img" ];
+    then
+        echo "No boot.img found. Run make bootimage first."
+        return 1
+    fi
+    PARTITION=`grep "^\/boot" $OUT/recovery/root/etc/recovery.fstab | awk {'print $3'}`
+    if [ -z "$PARTITION" ];
+    then
+        echo "Unable to determine boot partition."
+        return 1
+    fi
+    adb start-server
+    adb root
+    sleep 1
+    adb wait-for-device
+    adb remount
+    adb wait-for-device
+    if (adb shell cat /system/build.prop | grep -q "ro.cm.device=$CM_BUILD");
+    then
+        adb push $OUT/boot.img /cache/
+        for i in $OUT/system/lib/modules/*;
+        do
+            adb push $i /system/lib/modules/
+        done
+        adb shell dd if=/cache/boot.img of=$PARTITION
+        adb shell chmod 644 /system/lib/modules/*
+        echo "Installation complete."
+    else
+        echo "The connected device does not appear to be $CM_BUILD, run away!"
+    fi
+}
+
+function installrecovery()
+{
+    if [ ! -e "$OUT/recovery/root/etc/recovery.fstab" ];
+    then
+        echo "No recovery.fstab found. Build recovery first."
+        return 1
+    fi
+    if [ ! -e "$OUT/recovery.img" ];
+    then
+        echo "No recovery.img found. Run make recoveryimage first."
+        return 1
+    fi
+    PARTITION=`grep "^\/recovery" $OUT/recovery/root/etc/recovery.fstab | awk {'print $3'}`
+    if [ -z "$PARTITION" ];
+    then
+        echo "Unable to determine recovery partition."
+        return 1
+    fi
+    adb start-server
+    adb root
+    sleep 1
+    adb wait-for-device
+    adb remount
+    adb wait-for-device
+    if (adb shell cat /system/build.prop | grep -q "ro.cm.device=$CM_BUILD");
+    then
+        adb push $OUT/recovery.img /cache/
+        adb shell dd if=/cache/recovery.img of=$PARTITION
+        echo "Installation complete."
+    else
+        echo "The connected device does not appear to be $CM_BUILD, run away!"
+    fi
+}
 
 function makerecipe() {
   if [ -z "$1" ]
@@ -1221,7 +1333,7 @@ function cmgerrit() {
         $FUNCNAME help
         return 1
     fi
-    local user=`git config --get review.review.cyanogenmod.com.username`
+    local user=`git config --get review.genetics.github.com.username`
     local review=`git config --get remote.github.review`
     local project=`git config --get remote.github.projectname`
     local command=$1
@@ -1478,7 +1590,7 @@ function cmrebase() {
     echo "Bringing it up to date..."
     repo sync .
     echo "Fetching change..."
-    git fetch "http://review.cyanogenmod.com/p/$repo" "refs/changes/$refs" && git cherry-pick FETCH_HEAD
+    git fetch "http://genetics.github.com/p/$repo" "refs/changes/$refs" && git cherry-pick FETCH_HEAD
     if [ "$?" != "0" ]; then
         echo "Error cherry-picking. Not uploading!"
         return

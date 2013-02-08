@@ -1,4 +1,18 @@
 #!/usr/bin/env python
+# Copyright (C) 2012 The GenetICS Project
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 import os
 import sys
 import urllib2
@@ -20,7 +34,7 @@ except:
     device = product
 
 if not depsonly:
-    print "Device %s not found. Attempting to retrieve device repository from CyanogenMod Github (http://github.com/CyanogenMod)." % device
+    print "Device %s not found. Attempting to retrieve device repository from GenetICS Github (http://github.com/GenetICS)." % device
 
 repositories = []
 
@@ -36,7 +50,7 @@ except:
 
 page = 1
 while not depsonly:
-    githubreq = urllib2.Request("https://api.github.com/users/CyanogenMod/repos?per_page=100&page=%d" % page)
+    githubreq = urllib2.Request("https://api.github.com/users/GenetICS/repos?per_page=100&page=%d" % page)
     if githubauth:
         githubreq.add_header("Authorization","Basic %s" % githubauth)
     result = json.loads(urllib2.urlopen(githubreq).read())
@@ -116,12 +130,12 @@ def add_to_manifest(repositories):
         repo_name = repository['repository']
         repo_target = repository['target_path']
         if exists_in_tree(lm, repo_name):
-            print 'CyanogenMod/%s already exists' % (repo_name)
+            print 'GenetICS/%s already exists' % (repo_name)
             continue
 
-        print 'Adding dependency: CyanogenMod/%s -> %s' % (repo_name, repo_target)
+        print 'Adding dependency: GenetICS/%s -> %s' % (repo_name, repo_target)
         project = ElementTree.Element("project", attrib = { "path": repo_target,
-            "remote": "github", "name": "CyanogenMod/%s" % repo_name, "revision": "ics" })
+            "remote": "github", "name": "GenetICS/%s" % repo_name, "revision": "ics-plus" })
 
         if 'branch' in repository:
             project.set('revision',repository['branch'])
@@ -147,7 +161,7 @@ def fetch_dependencies(repo_path):
         fetch_list = []
 
         for dependency in dependencies:
-            if not is_in_manifest("CyanogenMod/%s" % dependency['repository']):
+            if not is_in_manifest("GenetICS/%s" % dependency['repository']):
                 fetch_list.append(dependency)
                 syncable_repos.append(dependency['target_path'])
 
@@ -191,4 +205,4 @@ else:
             print "Done"
             sys.exit()
 
-print "Repository for %s not found in the CyanogenMod Github repository list. If this is in error, you may need to manually add it to your local_manifest.xml." % device
+print "Repository for %s not found in the GenetICS Github repository list. If this is in error, you may need to manually add it to your local_manifest.xml." % device
