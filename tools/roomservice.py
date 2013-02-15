@@ -63,6 +63,9 @@ while not depsonly:
         repositories.append(res)
     page = page + 1
 
+local_manifests = r'.repo/local_manifests'
+if not os.path.exists(local_manifests): os.makedirs(local_manifests)
+
 def exists_in_tree(lm, repository):
     for child in lm.getchildren():
         if child.attrib['name'].endswith(repository):
@@ -93,7 +96,7 @@ def get_default_revision():
 
 def get_from_manifest(devicename):
     try:
-        lm = ElementTree.parse(".repo/local_manifest.xml")
+        lm = ElementTree.parse(".repo/local_manifests/roomservice.xml")
         lm = lm.getroot()
     except:
         lm = ElementTree.Element("manifest")
@@ -117,7 +120,7 @@ def get_from_manifest(devicename):
 
 def is_in_manifest(projectname):
     try:
-        lm = ElementTree.parse(".repo/local_manifest.xml")
+        lm = ElementTree.parse(".repo/local_manifests/roomservice.xml")
         lm = lm.getroot()
     except:
         lm = ElementTree.Element("manifest")
@@ -128,9 +131,9 @@ def is_in_manifest(projectname):
 
     return None
 
-def add_to_manifest(repositories):
+def add_to_manifest(repositories, fallback_branch = None):
     try:
-        lm = ElementTree.parse(".repo/local_manifest.xml")
+        lm = ElementTree.parse(".repo/local_manifests/roomservice.xml")
         lm = lm.getroot()
     except:
         lm = ElementTree.Element("manifest")
@@ -148,6 +151,11 @@ def add_to_manifest(repositories):
 
         if 'branch' in repository:
             project.set('revision',repository['branch'])
+        elif fallback_branch:
+            print "Using fallback branch %s for %s" % (fallback_branch, repo_name)
+            project.set('revision', fallback_branch)
+        else:
+            print "Using default branch for %s" % repo_name
 
         lm.append(project)
 
@@ -155,11 +163,11 @@ def add_to_manifest(repositories):
     raw_xml = ElementTree.tostring(lm)
     raw_xml = '<?xml version="1.0" encoding="UTF-8"?>\n' + raw_xml
 
-    f = open('.repo/local_manifest.xml', 'w')
+    f = open('.repo/local_manifests/roomservice.xml', 'w')
     f.write(raw_xml)
     f.close()
 
-def fetch_dependencies(repo_path):
+def fetch_dependencies(repo_path, fallback_branch = None):
     print 'Looking for dependencies'
     dependencies_path = repo_path + '/cm.dependencies'
     syncable_repos = []
@@ -178,7 +186,7 @@ def fetch_dependencies(repo_path):
 
         if len(fetch_list) > 0:
             print 'Adding dependencies to manifest'
-            add_to_manifest(fetch_list)
+            add_to_manifest(fetch_list, fallback_branch)
     else:
         print 'Dependencies file not found, bailing out.'
 
@@ -212,22 +220,27 @@ else:
             githubreq = urllib2.Request(repository['branches_url'].replace('{/branch}', ''))
             add_auth(githubreq)
             result = json.loads(urllib2.urlopen(githubreq).read())
+
+            ## Try tags, too, since that's what releases use
+            if not has_branch(result, default_revision):
+                githubreq = urllib2.Request(repository['tags_url'].replace('{/tag}', ''))
+                add_auth(githubreq)
+                result = json.loads(urllib2.urlopen(githubreq).read())
             
             repo_path = "device/%s/%s" % (manufacturer, device)
             adding = {'repository':repo_name,'target_path':repo_path}
             
+            fallback_branch = None
             if not has_branch(result, default_revision):
-                found = False
                 if os.getenv('ROOMSERVICE_BRANCHES'):
                     fallbacks = filter(bool, os.getenv('ROOMSERVICE_BRANCHES').split(' '))
                     for fallback in fallbacks:
                         if has_branch(result, fallback):
                             print "Using fallback branch: %s" % fallback
-                            found = True
-                            adding['branch'] = fallback
+                            fallback_branch = fallback
                             break
-                            
-                if not found:
+
+                if not fallback_branch:
                     print "Default revision %s not found in %s. Bailing." % (default_revision, repo_name)
                     print "Branches found:"
                     for branch in [branch['name'] for branch in result]:
@@ -235,14 +248,14 @@ else:
                     print "Use the ROOMSERVICE_BRANCHES environment variable to specify a list of fallback branches."
                     sys.exit()
 
-            add_to_manifest([adding])
+            add_to_manifest([adding], fallback_branch)
 
             print "Syncing repository to retrieve project."
             os.system('repo sync %s' % repo_path)
             print "Repository synced!"
 
-            fetch_dependencies(repo_path)
+            fetch_dependencies(repo_path, fallback_branch)
             print "Done"
             sys.exit()
 
-print "Repository for %s not found in the androidarmv6 Github repository list. If this is in error, you may need to manually add it to your local_manifest.xml." % device
+print "Repository for %s not found in the androidarmv6 Github repository list. If this is in error, you may need to manually add it to your local_manifests/roomservice.xml." % device

@@ -33,7 +33,6 @@ PRODUCT_PACKAGES += \
     KeyChain \
     MediaProvider \
     PackageInstaller \
-    PhotoTable \
     PicoTts \
     SettingsProvider \
     SharedStorageBackup \
@@ -84,6 +83,7 @@ PRODUCT_PACKAGES += \
     libfilterfw \
     libfilterpack_imageproc \
     libgabi++ \
+    libanalogradiobroadcasting \
     libicui18n \
     libicuuc \
     libjavacore \
