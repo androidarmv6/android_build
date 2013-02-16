@@ -1308,6 +1308,29 @@ function cmremote()
 }
 export -f cmremote
 
+function upstream()
+{
+    git remote rm upstream 2> /dev/null
+    if [ ! -d .git ]
+    then
+        echo .git directory not found. Please run this from the root directory of the Android repository you wish to set up.
+    fi
+    GERRIT_REMOTE=$(cat .git/config  | grep git://github.com | awk '{ print $NF }' | sed s#git://github.com/##g)
+    if [ -z "$GERRIT_REMOTE" ]
+    then
+        GERRIT_REMOTE=$(cat .git/config  | grep http://github.com | awk '{ print $NF }' | sed s#http://github.com/##g)
+        if [ -z "$GERRIT_REMOTE" ]
+        then
+          echo Unable to set up the git remote, are you in the root of the repo?
+          return 0
+        fi
+    fi
+    GERRIT_REMOTE=$(echo $GERRIT_REMOTE | grep androidarmv6 | awk '{ print $NF }' | sed s#androidarmv6#CyanogenMod#g)
+    git remote add upstream git://github.com/$GERRIT_REMOTE.git
+    echo You can now fetch from "upstream".
+}
+export -f upstream
+
 function githubssh()
 {
     git remote rm githubssh 2> /dev/null
@@ -1386,6 +1409,46 @@ function updateallnotes() {
   '
 }
 export -f updateallnotes
+
+function mergeupstream() {
+    if [ ! -d .git ]
+    then
+        echo .git directory not found. Please run this from the root directory of the Android repository you wish to set up.
+    fi
+    GERRIT_REMOTE=$(cat .git/config  | grep git://github.com | awk '{ print $NF }' | sed s#git://github.com/##g)
+    if [ -z "$GERRIT_REMOTE" ]
+    then
+        GERRIT_REMOTE=$(cat .git/config  | grep http://github.com | awk '{ print $NF }' | sed s#http://github.com/##g)
+        if [ -z "$GERRIT_REMOTE" ]
+        then
+          echo Unable to set up the git remote, are you in the root of the repo?
+          return 0
+        fi
+    fi
+    pwd
+    ISANDROIDARMV6_REPO=$(echo $GERRIT_REMOTE | grep androidarmv6 | awk '{ print $NF }')
+    if [ -z "$ISANDROIDARMV6_REPO" ]
+    then
+        echo " I am not a androidarmv6 project."
+    else
+        upstream
+        githubssh
+        cmremote
+        git remote update
+	repo abandon cm-10.1 .
+	repo start cm-10.1 .
+        git merge upstream/cm-10.1
+        git push cmremote cm-10.1
+        git push githubssh cm-10.1
+        echo "Upstream changes have been merged."
+    fi
+}
+export -f mergeupstream
+
+
+
+
+
 
 function installboot()
 {
