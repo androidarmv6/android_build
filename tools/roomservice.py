@@ -52,9 +52,9 @@ def add_auth(githubreq):
     if githubauth:
         githubreq.add_header("Authorization","Basic %s" % githubauth)
 
-page = 1
+# page = 1
 while not depsonly:
-    githubreq = urllib2.Request("https://api.github.com/users/androidarmv6/repos?per_page=100&page=%d" % page)
+    githubreq = urllib2.Request("https://api.github.com/users/androidarmv6/repos?per_page=100page=1d")
     add_auth(githubreq)
     result = json.loads(urllib2.urlopen(githubreq).read())
     if len(result) == 0:
