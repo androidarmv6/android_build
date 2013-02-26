@@ -1187,6 +1187,29 @@ function cmremote()
 }
 export -f cmremote
 
+function upstream()
+{
+    git remote rm upstream 2> /dev/null
+    if [ ! -d .git ]
+    then
+        echo .git directory not found. Please run this from the root directory of the Android repository you wish to set up.
+    fi
+    GERRIT_REMOTE=$(cat .git/config  | grep git://github.com | awk '{ print $NF }' | sed s#git://github.com/##g)
+    if [ -z "$GERRIT_REMOTE" ]
+    then
+        GERRIT_REMOTE=$(cat .git/config  | grep http://github.com | awk '{ print $NF }' | sed s#http://github.com/##g)
+        if [ -z "$GERRIT_REMOTE" ]
+        then
+          echo Unable to set up the git remote, are you in the root of the repo?
+          return 0
+        fi
+    fi
+    GERRIT_REMOTE=$(echo $GERRIT_REMOTE | grep GenetICS | awk '{ print $NF }' | sed s#GenetICS#CyanogenMod#g)
+    git remote add upstream git://github.com/$GERRIT_REMOTE.git
+    echo You can now fetch from "upstream".
+}
+export -f upstream
+
 function githubssh()
 {
     git remote rm githubssh 2> /dev/null
@@ -1225,6 +1248,56 @@ function aospremote()
     echo "Remote 'aosp' created"
 }
 export -f aospremote
+
+function mergeupstream() {
+    if [ ! -d .git ]
+    then
+        echo .git directory not found. Please run this from the root directory of the Android repository you wish to set up.
+    fi
+    GERRIT_REMOTE=$(cat .git/config  | grep git://github.com | awk '{ print $NF }' | sed s#git://github.com/##g)
+    if [ -z "$GERRIT_REMOTE" ]
+    then
+        GERRIT_REMOTE=$(cat .git/config  | grep http://github.com | awk '{ print $NF }' | sed s#http://github.com/##g)
+        if [ -z "$GERRIT_REMOTE" ]
+        then
+          echo Unable to set up the git remote, are you in the root of the repo?
+          return 0
+        fi
+    fi
+    pwd
+    ISGenetICS_REPO=$(echo $GERRIT_REMOTE | grep GenetICS | awk '{ print $NF }')
+    if [ -z "$ISGenetICS_REPO" ]
+    then
+        echo " I am not a GenetICS project."
+    else
+        upstream
+        githubssh
+        cmremote
+        repo sync . 2> /dev/null
+        git reset --hard
+        git clean -fd
+        repo sync . 2> /dev/null
+        git remote update
+        repo sync . 2> /dev/null
+        repo abandon ics . 2> /dev/null
+        repo start ics . 2> /dev/null
+        git merge upstream/ics
+        git push cmremote ics
+        git push githubssh ics
+        echo "Upstream changes have been merged."
+    fi
+}
+export -f mergeupstream
+
+function mergeupstreamall() {
+  repo forall -c '
+  if [ "$REPO_REMOTE" == "github" ]
+  then
+    mergeupstream
+  fi
+  '
+}
+export -f mergeupstreamall
 
 function installboot()
 {
