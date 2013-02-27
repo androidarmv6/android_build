@@ -1278,11 +1278,11 @@ function mergeupstream() {
         repo sync . 2> /dev/null
         git remote update
         repo sync . 2> /dev/null
-        repo abandon ics . 2> /dev/null
-        repo start ics . 2> /dev/null
+        repo abandon ics-plus . 2> /dev/null
+        repo start ics-plus . 2> /dev/null
         git merge upstream/ics
-        git push cmremote ics
-        git push githubssh ics
+        git push cmremote ics-plus
+        git push githubssh ics-plus
         echo "Upstream changes have been merged."
     fi
 }
