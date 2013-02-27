@@ -1,6 +1,6 @@
 function help() {
 cat <<EOF
-Invoke ". build/envsetup.sh" from your shell to add the following functions to your environment:
+Invoke "source build/envsetup.sh" from your shell to add the following functions to your environment:
 - croot:   Changes directory to the top of the tree.
 - m:       Makes from the top of the tree.
 - mm:      Builds all of the modules in the current directory.
