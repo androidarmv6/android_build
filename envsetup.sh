@@ -1272,7 +1272,7 @@ function mergeupstream() {
     else
         upstream
         githubssh
-        cmremote
+        echo "cmremote"
         repo sync . 2> /dev/null
         git reset --hard
         git clean -fd
