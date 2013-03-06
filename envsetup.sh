@@ -1282,7 +1282,7 @@ function mergeupstream() {
         repo abandon ics-plus . 2> /dev/null
         repo start ics-plus . 2> /dev/null
         git merge upstream/ics
-        git push cmremote ics-plus
+        echo "git push cmremote ics-plus"
         git push githubssh ics-plus
         echo "Upstream changes have been merged."
     fi
