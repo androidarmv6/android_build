@@ -1357,6 +1357,7 @@ function installrecovery()
         return 1
     fi
     PARTITION=`grep "^\/recovery" $OUT/recovery/root/etc/recovery.fstab | awk {'print $3'}`
+    PARTITION_TYPE=`grep "^\/recovery" $OUT/recovery/root/etc/recovery.fstab | awk {'print $2'}`
     if [ -z "$PARTITION" ];
     then
         echo "Unable to determine recovery partition."
@@ -1371,7 +1372,12 @@ function installrecovery()
     if (adb shell cat /system/build.prop | grep -q "ro.cm.device=$CM_BUILD");
     then
         adb push $OUT/recovery.img /cache/
-        adb shell dd if=/cache/recovery.img of=$PARTITION
+        if [ "$PARTITION_TYPE" == "mtd" ];
+        then
+            adb shell flash_image $PARTITION /cache/recovery.img
+        else
+            adb shell dd if=/cache/recovery.img of=$PARTITION
+        fi
         echo "Installation complete."
     else
         echo "The connected device does not appear to be $CM_BUILD, run away!"
