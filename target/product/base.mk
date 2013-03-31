@@ -42,8 +42,13 @@ PRODUCT_PACKAGES += \
     gzip \
     ime \
     init \
-    input \
-    javax.obex \
+    input
+ifeq ($(BOARD_HAVE_BLUETOOTH_BLUEZ),true)
+PRODUCT_PACKAGES += javax.btobex
+else
+PRODUCT_PACKAGES += javax.obex
+endif
+PRODUCT_PACKAGES += \
     libEGL \
     libETC1 \
     libFFTEm \
