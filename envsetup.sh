@@ -1455,6 +1455,11 @@ function mergeupstream() {
         git push cmremote cm-10.1
         git push githubssh cm-10.1
         echo "Upstream changes have been merged."
+        repo abandon cm-10.1 2> /dev/null
+        git remote rm cmremote 2> /dev/null
+        git remote rm githubssh 2> /dev/null
+        git remote rm upstream 2> /dev/null
+        repo sync . 2> /dev/null
     fi
 }
 export -f mergeupstream
@@ -1466,6 +1471,7 @@ function mergeupstreamall() {
     mergeupstream
   fi
   '
+  repo sync -j16
 }
 export -f mergeupstreamall
 
