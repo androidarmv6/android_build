@@ -1324,10 +1324,10 @@ function upstream()
     then
         echo .git directory not found. Please run this from the root directory of the Android repository you wish to set up.
     fi
-    GERRIT_REMOTE=$(cat .git/config  | grep git://github.com | awk '{ print $NF }' | sed s#git://github.com/##g)
+    GERRIT_REMOTE=$(cat .git/config | grep git://github.com/androidarmv6 | awk '{ print $NF }' | sed s#git://github.com/##g)
     if [ -z "$GERRIT_REMOTE" ]
     then
-        GERRIT_REMOTE=$(cat .git/config  | grep http://github.com | awk '{ print $NF }' | sed s#http://github.com/##g)
+        GERRIT_REMOTE=$(cat .git/config | grep http://github.com/androidarmv6 | awk '{ print $NF }' | sed s#http://github.com/##g)
         if [ -z "$GERRIT_REMOTE" ]
         then
           echo Unable to set up the git remote, are you in the root of the repo?
@@ -1443,12 +1443,14 @@ function mergeupstream() {
         upstream
         githubssh
         cmremote
+        repo sync . 2> /dev/null
         git reset --hard
         git clean -fd
+        repo sync . 2> /dev/null
         git remote update
-        repo sync .
-        repo abandon cm-10.1 .
-        repo start cm-10.1 .
+        repo sync . 2> /dev/null
+        repo abandon cm-10.1 . 2> /dev/null
+        repo start cm-10.1 . 2> /dev/null
         git merge upstream/cm-10.1
         git push cmremote cm-10.1
         git push githubssh cm-10.1
