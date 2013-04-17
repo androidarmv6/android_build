@@ -1382,28 +1382,21 @@ function updatenotes() {
     then
         echo .git directory not found. Please run this from the root directory of the Android repository you wish to set up.
     fi
-    GERRIT_REMOTE=$(cat .git/config  | grep git://github.com | awk '{ print $NF }' | sed s#git://github.com/##g)
+    GERRIT_REMOTE=$(cat .git/config | grep git://github.com/androidarmv6 | awk '{ print $NF }' | sed s#git://github.com/##g)
     if [ -z "$GERRIT_REMOTE" ]
     then
-        GERRIT_REMOTE=$(cat .git/config  | grep http://github.com | awk '{ print $NF }' | sed s#http://github.com/##g)
+        GERRIT_REMOTE=$(cat .git/config | grep http://github.com/androidarmv6 | awk '{ print $NF }' | sed s#http://github.com/##g)
         if [ -z "$GERRIT_REMOTE" ]
         then
-          echo Unable to set up the git remote, are you in the root of the repo?
           return 0
         fi
     fi
     pwd
-    ISANDROIDARMV6_REPO=$(echo $GERRIT_REMOTE | grep androidarmv6 | awk '{ print $NF }')
-    if [ -z "$ISANDROIDARMV6_REPO" ]
-    then
-        echo " I am not a androidarmv6 project."
-    else
-        cmremote
-        githubssh
-        git fetch cmremote refs/notes/review:refs/notes/review
-        git push githubssh refs/notes/review:refs/notes/review
-        echo "All notes were updated."
-    fi
+    cmremote
+    githubssh
+    git fetch cmremote refs/notes/review:refs/notes/review
+    git push githubssh refs/notes/review:refs/notes/review
+    echo "All notes were updated."
 }
 export -f updatenotes
 
@@ -1422,38 +1415,33 @@ function mergeupstream() {
     then
         echo .git directory not found. Please run this from the root directory of the Android repository you wish to set up.
     fi
-    GERRIT_REMOTE=$(cat .git/config  | grep git://github.com | awk '{ print $NF }' | sed s#git://github.com/##g)
+    GERRIT_REMOTE=$(cat .git/config | grep git://github.com/androidarmv6 | awk '{ print $NF }' | sed s#git://github.com/##g)
     if [ -z "$GERRIT_REMOTE" ]
     then
-        GERRIT_REMOTE=$(cat .git/config  | grep http://github.com | awk '{ print $NF }' | sed s#http://github.com/##g)
+        GERRIT_REMOTE=$(cat .git/config | grep http://github.com/androidarmv6 | awk '{ print $NF }' | sed s#http://github.com/##g)
         if [ -z "$GERRIT_REMOTE" ]
         then
-          echo Unable to set up the git remote, are you in the root of the repo?
           return 0
         fi
     fi
     pwd
-    ISANDROIDARMV6_REPO=$(echo $GERRIT_REMOTE | grep androidarmv6 | awk '{ print $NF }')
-    if [ -z "$ISANDROIDARMV6_REPO" ]
-    then
-        echo " I am not a androidarmv6 project."
-    else
-        upstream
-        githubssh
-        cmremote
-        repo sync . 2> /dev/null
-        git reset --hard
-        git clean -fd
-        repo sync . 2> /dev/null
-        git remote update
-        repo sync . 2> /dev/null
-        repo abandon cm-10.1 . 2> /dev/null
-        repo start cm-10.1 . 2> /dev/null
-        git merge upstream/cm-10.1
-        git push cmremote cm-10.1
-        git push githubssh cm-10.1
-        echo "Upstream changes have been merged."
-    fi
+    upstream
+    #skip github
+    #githubssh
+    cmremote
+    repo sync . 2> /dev/null
+    git reset --hard 2> /dev/null
+    git clean -fd 2> /dev/null
+    repo sync . 2> /dev/null
+    git remote update 2> /dev/null
+    repo sync . 2> /dev/null
+    repo abandon cm-10.1 . 2> /dev/null
+    repo start cm-10.1 . 2> /dev/null
+    git merge upstream/cm-10.1
+    git push cmremote cm-10.1
+    # git push cmremote(gerrit) updates github, no need manually update
+    # git push githubssh cm-10.1
+    echo "Upstream changes have been merged."
 }
 export -f mergeupstream
 
