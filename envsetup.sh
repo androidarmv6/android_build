@@ -16,7 +16,7 @@ Invoke ". build/envsetup.sh" from your shell to add the following functions to y
 - cmremote: Add git remote for CM Gerrit Review.
 - cmgerrit: A Git wrapper that fetches/pushes patch from/to CM Gerrit Review.
 - cmrebase: Rebase a Gerrit change and push it again.
-- aospremote: Add git remote for matching AOSP repository.
+- aosp:     Add git remote for matching AOSP repository.
 - mka:      Builds using SCHED_BATCH on all processors.
 - mkap:     Builds the module(s) using mka and pushes them to the device.
 - cmka:     Cleans and builds using mka.
@@ -1360,7 +1360,7 @@ function githubssh()
 }
 export -f githubssh
 
-function cafremote()
+function caf()
 {
     git remote rm caf 2> /dev/null
     if [ ! -d .git ]
@@ -1375,16 +1375,16 @@ function cafremote()
     git remote add caf git://codeaurora.org/$PFX$PROJECT.git
     echo "Remote 'caf' created"
 }
-export -f cafremote
+export -f caf
 
-function aospremote()
+function aosp()
 {
     git remote rm aosp 2> /dev/null
     if [ ! -d .git ]
     then
         echo .git directory not found. Please run this from the root directory of the Android repository you wish to set up.
     fi
-    PROJECT=`pwd | sed s#$ANDROID_BUILD_TOP/##g`
+    PROJECT=`pwd -P | sed s#$ANDROID_BUILD_TOP/##g`
     if (echo $PROJECT | grep -qv "^device")
     then
         PFX="platform/"
@@ -1392,7 +1392,7 @@ function aospremote()
     git remote add aosp https://android.googlesource.com/$PFX$PROJECT
     echo "Remote 'aosp' created"
 }
-export -f aospremote
+export -f aosp
 
 function updatenotes() {
     if [ ! -d .git ]
@@ -1427,6 +1427,10 @@ function updateallnotes() {
 }
 export -f updateallnotes
 
+# Examples:
+# mergeupstream
+# mergeupstream caf jb_2.5
+# mergeupstream aosp android-4.2.2_r1.2
 function mergeupstream() {
     if [ ! -d .git ]
     then
@@ -1441,8 +1445,23 @@ function mergeupstream() {
           return 0
         fi
     fi
+
+    UPSTREAM="upstream"
+    R_BRANCH="cm-10.1"
+    if [ ! -z "$1" ]
+    then
+        UPSTREAM=$1
+        $UPSTREAM
+    else
+        upstream
+    fi
+
+    if [ ! -z "$2" ]
+    then
+        R_BRANCH=$2
+    fi
+
     pwd
-    upstream
     #skip github
     #githubssh
     cmremote
@@ -1454,11 +1473,11 @@ function mergeupstream() {
     repo sync . 2> /dev/null
     repo abandon cm-10.1 . 2> /dev/null
     repo start cm-10.1 . 2> /dev/null
-    git merge upstream/cm-10.1
+    git merge $UPSTREAM/$R_BRANCH
     git push cmremote cm-10.1
     # git push cmremote(gerrit) updates github, no need manually update
     # git push githubssh cm-10.1
-    echo "Upstream changes have been merged."
+    echo "Upstream ($UPSTREAM/$R_BRANCH) changes have been merged."
 }
 export -f mergeupstream
 
