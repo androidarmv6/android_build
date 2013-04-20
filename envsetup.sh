@@ -1360,6 +1360,23 @@ function githubssh()
 }
 export -f githubssh
 
+function cafremote()
+{
+    git remote rm caf 2> /dev/null
+    if [ ! -d .git ]
+    then
+        echo .git directory not found. Please run this from the root directory of the Android repository you wish to set up.
+    fi
+    PROJECT=`pwd -P | sed s#$ANDROID_BUILD_TOP/##g`
+    if (echo $PROJECT | grep -qv "^device")
+    then
+        PFX="platform/"
+    fi
+    git remote add caf git://codeaurora.org/$PFX$PROJECT.git
+    echo "Remote 'caf' created"
+}
+export -f cafremote
+
 function aospremote()
 {
     git remote rm aosp 2> /dev/null
