@@ -1501,6 +1501,64 @@ function mergeupstreamall() {
 }
 export -f mergeupstreamall
 
+# tag cm-10.1-20130501
+function tag() {
+    if [ ! -d .git ]
+    then
+        echo .git directory not found. Please run this from the root directory of the Android repository you wish to set up.
+    fi
+    GERRIT_REMOTE=$(cat .git/config | grep git://github.com/androidarmv6 | awk '{ print $NF }' | sed s#git://github.com/##g)
+    if [ -z "$GERRIT_REMOTE" ]
+    then
+        GERRIT_REMOTE=$(cat .git/config | grep http://github.com/androidarmv6 | awk '{ print $NF }' | sed s#http://github.com/##g)
+        if [ -z "$GERRIT_REMOTE" ]
+        then
+          return 0
+        fi
+    fi
+    if [ -z "$1" ]
+    then
+      echo Tag must be specified.
+      return 0
+    fi
+    R_TAG=$1
+    cmremote
+    git tag -d $R_TAG
+    git tag -a $R_TAG -m "$R_TAG"
+    git push -f cmremote $R_TAG
+    echo "Tagged: $R_TAG"
+}
+export -f tag
+
+# tagall cm-10.1-RC2
+function tagall() {
+    if [ -z "$1" ]
+    then
+      echo Tag must be specified...
+      return 0
+    fi
+    R_TAG=$1
+    repo forall -c '
+    if [[ "$REPO_REMOTE" == "github"] && ["$REPO_PATH" != "android" ]]
+    then
+      tag $R_TAG
+    fi
+    '
+    cd android
+    repo manifest -o $R_TAG.xml -r
+    git add $R_TAG.xml
+    git commit -m "manifest: $R_TAG.xml"
+    # recreate manifest for android repo
+    repo manifest -o $R_TAG.xml -r
+    git add $R_TAG.xml
+    git commit --amend -m "manifest: $R_TAG.xml"
+    git tag -a $R_TAG -m "$R_TAG"
+    git push -f cmremote $R_TAG
+    cd ..
+    echo "MANIFEST: $R_TAG.xml"
+}
+export -f tagall
+
 
 function installboot()
 {
