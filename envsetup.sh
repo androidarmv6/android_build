@@ -1530,14 +1530,20 @@ function tag() {
 }
 export -f tag
 
-# tagall cm-10.1-RC2
+# tagall cm-10.1-RC2 cm-10.1
 function tagall() {
     if [ -z "$1" ]
     then
       echo Tag must be specified...
       return 0
     fi
+    if [ -z "$2" ]
+    then
+      echo Branch must be specified...
+      return 0
+    fi
     export R_TAG=$1
+    R_BRANCH=$2
     # Remove local manifests to build the core manifest
     rm -fr .repo/local_manifests
     repo sync -j4
@@ -1551,12 +1557,26 @@ function tagall() {
     repo manifest -o .repo/manifests/manifests/$R_TAG.xml -r
     # Add manifest
     cd .repo/manifests
+    cmremote
+    git remote update
     git add manifests/$R_TAG.xml
     git commit -m "manifests/$R_TAG.xml"
     git tag -a $R_TAG -m "$R_TAG"
     git push -f cmremote $R_TAG
     cd ../..
     sleep 20
+    repo sync -j4
+    # Merge tag
+    cd android
+    cmremote
+    git remote update
+    repo abandon $R_BRANCH .
+    repo start $R_BRANCH .
+    git merge $R_TAG
+    git push cmremote $R_BRANCH
+    repo abandon $R_BRANCH .
+    cd ../
+    sleep 15
     repo sync -j4
     echo "MANIFEST: android/manifests/$R_TAG.xml"
 }
