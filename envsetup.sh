@@ -1538,24 +1538,27 @@ function tagall() {
       return 0
     fi
     export R_TAG=$1
+    # Remove local manifests to build the core manifest
+    rm -fr .repo/local_manifests
+    repo sync -j4
+    # Create tags without android folder
     repo forall -c '
     if [[ "$REPO_REMOTE" == "github" && "$REPO_PATH" != "android" ]]
     then
       tag $R_TAG
     fi
     '
-    cd android
-    repo manifest -o $R_TAG.xml -r
-    git add $R_TAG.xml
-    git commit -m "manifest: $R_TAG.xml"
-    # recreate manifest for android repo
-    repo manifest -o $R_TAG.xml -r
-    git add $R_TAG.xml
-    git commit --amend -m "manifest: $R_TAG.xml"
+    repo manifest -o .repo/manifests/manifests/$R_TAG.xml -r
+    # Add manifest
+    cd .repo/manifests
+    git add manifests/$R_TAG.xml
+    git commit -m "manifests/$R_TAG.xml"
     git tag -a $R_TAG -m "$R_TAG"
     git push -f cmremote $R_TAG
-    cd ..
-    echo "MANIFEST: $R_TAG.xml"
+    cd ../..
+    sleep 20
+    repo sync -j4
+    echo "MANIFEST: android/manifests/$R_TAG.xml"
 }
 export -f tagall
 
