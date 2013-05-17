@@ -1355,10 +1355,10 @@ function githubssh()
     then
         echo .git directory not found. Please run this from the root directory of the Android repository you wish to set up.
     fi
-    GERRIT_REMOTE=$(cat .git/config  | grep git://github.com | awk '{ print $NF }' | sed s#git://github.com/##g)
+    GERRIT_REMOTE=$(cat .git/config | grep git://github.com/androidarmv6 | awk '{ print $NF }' | sed s#git://github.com/##g)
     if [ -z "$GERRIT_REMOTE" ]
     then
-        GERRIT_REMOTE=$(cat .git/config  | grep http://github.com | awk '{ print $NF }' | sed s#http://github.com/##g)
+        GERRIT_REMOTE=$(cat .git/config | grep http://github.com/androidarmv6 | awk '{ print $NF }' | sed s#http://github.com/##g)
         if [ -z "$GERRIT_REMOTE" ]
         then
           echo Unable to set up the git remote, are you in the root of the repo?
