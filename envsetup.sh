@@ -1532,6 +1532,11 @@ export -f tag
 
 # tagall cm-10.1-RC2 cm-10.1
 function tagall() {
+    if [ ! -d android ]
+    then
+      echo android directory not found.
+      return 0
+    fi
     if [ -z "$1" ]
     then
       echo Tag must be specified...
@@ -1547,6 +1552,12 @@ function tagall() {
     # Remove local manifests to build the core manifest
     rm -fr .repo/local_manifests
     repo sync -j4
+    cd android
+    cmremote
+    git remote update
+    repo abandon $R_BRANCH .
+    repo start $R_BRANCH .
+    cd ../
     # Create tags without android folder
     repo forall -c '
     if [[ "$REPO_REMOTE" == "github" && "$REPO_PATH" != "android" ]]
@@ -1554,29 +1565,17 @@ function tagall() {
       tag $R_TAG
     fi
     '
-    repo manifest -o .repo/manifests/manifests/$R_TAG.xml -r
-    # Add manifest
-    cd .repo/manifests
-    cmremote
-    git remote update
+    # Create manifest
+    repo manifest -o android/manifests/$R_TAG.xml -r
+    cd android
     git add manifests/$R_TAG.xml
     git commit -m "manifests/$R_TAG.xml"
+    git push cmremote $R_BRANCH
+    sleep 5
     git tag -a $R_TAG -m "$R_TAG"
     git push -f cmremote $R_TAG
-    cd ../..
-    sleep 20
-    repo sync -j4
-    # Merge tag
-    cd android
-    cmremote
-    git remote update
-    repo abandon $R_BRANCH .
-    repo start $R_BRANCH .
-    git merge $R_TAG
-    git push cmremote $R_BRANCH
-    repo abandon $R_BRANCH .
     cd ../
-    sleep 15
+    sleep 20
     repo sync -j4
     echo "MANIFEST: android/manifests/$R_TAG.xml"
 }
