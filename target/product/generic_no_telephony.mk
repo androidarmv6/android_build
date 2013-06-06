@@ -32,7 +32,6 @@ PRODUCT_PACKAGES := \
     LatinIME \
     Launcher2 \
     Music \
-    Provision \
     Phone \
     QuickSearchBox \
     Settings \
@@ -41,6 +40,10 @@ PRODUCT_PACKAGES := \
     bluetooth-health \
     hostapd \
     wpa_supplicant.conf
+
+ifneq ($(MINI_GAPPS),true)
+PRODUCT_PACKAGES += Provision
+endif
 
 PRODUCT_PACKAGES += \
     audio \
