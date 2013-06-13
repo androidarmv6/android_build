@@ -1194,10 +1194,10 @@ function upstream()
     then
         echo .git directory not found. Please run this from the root directory of the Android repository you wish to set up.
     fi
-    GERRIT_REMOTE=$(cat .git/config  | grep git://github.com | awk '{ print $NF }' | sed s#git://github.com/##g)
+    GERRIT_REMOTE=$(cat .git/config | grep git://github.com/androidarmv6 | awk '{ print $NF }' | sed s#git://github.com/##g)
     if [ -z "$GERRIT_REMOTE" ]
     then
-        GERRIT_REMOTE=$(cat .git/config  | grep http://github.com | awk '{ print $NF }' | sed s#http://github.com/##g)
+        GERRIT_REMOTE=$(cat .git/config | grep http://github.com/androidarmv6 | awk '{ print $NF }' | sed s#http://github.com/##g)
         if [ -z "$GERRIT_REMOTE" ]
         then
           echo Unable to set up the git remote, are you in the root of the repo?
@@ -1271,8 +1271,9 @@ function mergeupstream() {
         echo " I am not a androidarmv6 project."
     else
         upstream
-        githubssh
+        echo githubssh
         cmremote
+        repo sync . 2> /dev/null
         git reset --hard
         git clean -fd
         repo sync . 2> /dev/null
@@ -1282,7 +1283,7 @@ function mergeupstream() {
         repo start ics-plus . 2> /dev/null
         git merge upstream/ics
         git push cmremote ics-plus
-        git push githubssh ics-plus
+        echo git push githubssh ics-plus
         echo "Upstream changes have been merged."
     fi
 }
@@ -1311,6 +1312,7 @@ function installboot()
         return 1
     fi
     PARTITION=`grep "^\/boot" $OUT/recovery/root/etc/recovery.fstab | awk {'print $3'}`
+    PARTITION_TYPE=`grep "^\/boot" $OUT/recovery/root/etc/recovery.fstab | awk {'print $2'}`
     if [ -z "$PARTITION" ];
     then
         echo "Unable to determine boot partition."
@@ -1329,7 +1331,12 @@ function installboot()
         do
             adb push $i /system/lib/modules/
         done
-        adb shell dd if=/cache/boot.img of=$PARTITION
+        if [ "$PARTITION_TYPE" == "mtd" ];
+        then
+            adb shell flash_image $PARTITION /cache/boot.img
+        else
+            adb shell dd if=/cache/boot.img of=$PARTITION
+        fi
         adb shell chmod 644 /system/lib/modules/*
         echo "Installation complete."
     else
@@ -1350,6 +1357,7 @@ function installrecovery()
         return 1
     fi
     PARTITION=`grep "^\/recovery" $OUT/recovery/root/etc/recovery.fstab | awk {'print $3'}`
+    PARTITION_TYPE=`grep "^\/recovery" $OUT/recovery/root/etc/recovery.fstab | awk {'print $2'}`
     if [ -z "$PARTITION" ];
     then
         echo "Unable to determine recovery partition."
@@ -1364,7 +1372,12 @@ function installrecovery()
     if (adb shell cat /system/build.prop | grep -q "ro.cm.device=$CM_BUILD");
     then
         adb push $OUT/recovery.img /cache/
-        adb shell dd if=/cache/recovery.img of=$PARTITION
+        if [ "$PARTITION_TYPE" == "mtd" ];
+        then
+            adb shell flash_image $PARTITION /cache/recovery.img
+        else
+            adb shell dd if=/cache/recovery.img of=$PARTITION
+        fi
         echo "Installation complete."
     else
         echo "The connected device does not appear to be $CM_BUILD, run away!"
