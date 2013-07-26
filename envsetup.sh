@@ -1566,7 +1566,7 @@ function mergeupstream() {
     fi
 
     UPSTREAM="upstream"
-    R_BRANCH="cm-10.1"
+    R_BRANCH="cm-10.2"
     if [ ! -z "$1" ]
     then
         UPSTREAM=$1
@@ -1590,12 +1590,12 @@ function mergeupstream() {
     repo sync . 2> /dev/null
     git remote update 2> /dev/null
     repo sync . 2> /dev/null
-    repo abandon cm-10.1 . 2> /dev/null
-    repo start cm-10.1 . 2> /dev/null
+    repo abandon cm-10.2 . 2> /dev/null
+    repo start cm-10.2 . 2> /dev/null
     git merge $UPSTREAM/$R_BRANCH
-    git push cmremote cm-10.1
+    git push cmremote cm-10.2
     # git push cmremote(gerrit) updates github, no need manually update
-    # git push githubssh cm-10.1
+    # git push githubssh cm-10.2
     echo "Upstream ($UPSTREAM/$R_BRANCH) changes have been merged."
 }
 export -f mergeupstream
@@ -1610,7 +1610,7 @@ function mergeupstreamall() {
 }
 export -f mergeupstreamall
 
-# tag cm-10.1-20130501
+# tag cm-10.2-20130501
 function tag() {
     if [ ! -d .git ]
     then
@@ -1639,7 +1639,7 @@ function tag() {
 }
 export -f tag
 
-# tagall cm-10.1-RC2 cm-10.1
+# tagall cm-10.2-RC2 cm-10.2
 function tagall() {
     if [ ! -d android ]
     then
