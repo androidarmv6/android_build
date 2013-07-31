@@ -2,6 +2,7 @@
 # Generating binaries for the ARMv7-a architecture and higher
 #
 ARCH_ARM_HAVE_ARMV7A            := true
+ARCH_ARM_HAVE_TLS_REGISTER      := true
 ifneq ($(strip $(TARGET_ARCH_VARIANT_FPU)),)
 ARCH_ARM_HAVE_VFP               := true
 else
