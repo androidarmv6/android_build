@@ -22,12 +22,6 @@ ifeq ($(strip $(TARGET_ARCH_VARIANT)),)
 TARGET_ARCH_VARIANT := x86
 endif
 
-ifeq ($(strip $(TARGET_GCC_VERSION_EXP)),)
-TARGET_GCC_VERSION := 4.7
-else
-TARGET_GCC_VERSION := $(TARGET_GCC_VERSION_EXP)
-endif
-
 # Include the arch-variant-specific configuration file.
 # Its role is to define various ARCH_X86_HAVE_XXX feature macros,
 # plus initial values for TARGET_GLOBAL_CFLAGS
@@ -42,7 +36,7 @@ include $(TARGET_ARCH_SPECIFIC_MAKEFILE)
 
 # You can set TARGET_TOOLS_PREFIX to get gcc from somewhere else
 ifeq ($(strip $(TARGET_TOOLS_PREFIX)),)
-TARGET_TOOLCHAIN_ROOT := prebuilts/gcc/$(HOST_PREBUILT_TAG)/x86/i686-linux-android-$(TARGET_GCC_VERSION)
+TARGET_TOOLCHAIN_ROOT := prebuilts/gcc/$(HOST_PREBUILT_TAG)/x86/i686-linux-android-4.6
 TARGET_TOOLS_PREFIX := $(TARGET_TOOLCHAIN_ROOT)/bin/i686-linux-android-
 endif
 
@@ -90,7 +84,6 @@ TARGET_GLOBAL_CFLAGS += \
 			-Ulinux \
 			-Wa,--noexecstack \
 			-Werror=format-security \
-			-D_FORTIFY_SOURCE=1 \
 			-Wstrict-aliasing=2 \
 			-fPIC -fPIE \
 			-ffunction-sections \
@@ -151,7 +144,6 @@ TARGET_GLOBAL_LDFLAGS += -m32
 
 TARGET_GLOBAL_LDFLAGS += -Wl,-z,noexecstack
 TARGET_GLOBAL_LDFLAGS += -Wl,-z,relro -Wl,-z,now
-TARGET_GLOBAL_LDFLAGS += -Wl,--warn-shared-textrel
 TARGET_GLOBAL_LDFLAGS += -Wl,--gc-sections
 
 TARGET_C_INCLUDES := \
@@ -190,7 +182,6 @@ $(hide) $(PRIVATE_CXX) \
 	$(if $(PRIVATE_GROUP_STATIC_LIBRARIES),-Wl$(comma)--start-group) \
 	$(call normalize-target-libraries,$(PRIVATE_ALL_STATIC_LIBRARIES)) \
 	$(if $(PRIVATE_GROUP_STATIC_LIBRARIES),-Wl$(comma)--end-group) \
-	$(PRIVATE_TARGET_LIBGCC) \
 	$(call normalize-target-libraries,$(PRIVATE_ALL_SHARED_LIBRARIES)) \
 	-o $@ \
 	$(PRIVATE_LDFLAGS) \
@@ -205,8 +196,10 @@ $(hide) $(PRIVATE_CXX) \
 	-Wl,-dynamic-linker,/system/bin/linker \
 	-Wl,-z,nocopyreloc \
 	-fPIE -pie \
+	-o $@ \
 	$(PRIVATE_TARGET_GLOBAL_LD_DIRS) \
 	-Wl,-rpath-link=$(TARGET_OUT_INTERMEDIATE_LIBRARIES) \
+	$(call normalize-target-libraries,$(PRIVATE_ALL_SHARED_LIBRARIES)) \
 	$(if $(filter true,$(PRIVATE_NO_CRT)),,$(PRIVATE_TARGET_CRTBEGIN_DYNAMIC_O)) \
 	$(PRIVATE_ALL_OBJECTS) \
 	-Wl,--whole-archive \
@@ -215,9 +208,6 @@ $(hide) $(PRIVATE_CXX) \
 	$(if $(PRIVATE_GROUP_STATIC_LIBRARIES),-Wl$(comma)--start-group) \
 	$(call normalize-target-libraries,$(PRIVATE_ALL_STATIC_LIBRARIES)) \
 	$(if $(PRIVATE_GROUP_STATIC_LIBRARIES),-Wl$(comma)--end-group) \
-	$(PRIVATE_TARGET_LIBGCC) \
-	$(call normalize-target-libraries,$(PRIVATE_ALL_SHARED_LIBRARIES)) \
-	-o $@ \
 	$(PRIVATE_LDFLAGS) \
 	$(PRIVATE_TARGET_LIBGCC) \
 	$(if $(filter true,$(PRIVATE_NO_CRT)),,$(PRIVATE_TARGET_CRTEND_O))
