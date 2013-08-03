@@ -73,11 +73,19 @@ TARGET_arm_CFLAGS :=    -O2 \
                         -fstrict-aliasing    \
                         -funswitch-loops
 
-# Modules can choose to compile some source as thumb.
+# Modules can choose to compile some source as thumb. As
+# non-thumb enabled targets are supported, this is treated
+# as a 'hint'. If thumb is not enabled, these files are just
+# compiled as ARM.
+ifeq ($(ARCH_ARM_HAVE_THUMB_SUPPORT),true)
 TARGET_thumb_CFLAGS :=  -mthumb \
                         -Os \
                         -fomit-frame-pointer \
                         -fno-strict-aliasing
+else
+TARGET_thumb_CFLAGS :=  $(TARGET_arm_CFLAGS) \
+			-fno-strict-aliasing
+endif
 
 # Set FORCE_ARM_DEBUGGING to "true" in your buildspec.mk
 # or in your environment to force a full arm build, even for
@@ -145,7 +153,11 @@ TARGET_GLOBAL_LDFLAGS += \
 			-Wl,--icf=safe \
 			$(arch_variant_ldflags)
 
+# We only need thumb interworking in cases where thumb support
+# is available in the architecture.
+ifeq ($(ARCH_ARM_HAVE_THUMB_SUPPORT),true)
 TARGET_GLOBAL_CFLAGS += -mthumb-interwork
+endif
 
 TARGET_GLOBAL_CPPFLAGS += -fvisibility-inlines-hidden
 
