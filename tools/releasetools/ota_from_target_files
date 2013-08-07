@@ -326,7 +326,7 @@ def AppendAssertions(script, info_dict):
     device = GetBuildProp("ro.product.device", info_dict)
   else:
     device = OPTIONS.override_device
-  script.AssertDevice(device)
+  #script.AssertDevice(device)
 
 
 def MakeRecoveryPatch(input_tmp, output_zip, recovery_img, boot_img):
