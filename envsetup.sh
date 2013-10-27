@@ -20,6 +20,7 @@ Invoke ". build/envsetup.sh" from your shell to add the following functions to y
 - cmgerrit: A Git wrapper that fetches/pushes patch from/to CM Gerrit Review.
 - cmrebase: Rebase a Gerrit change and push it again.
 - aosp:     Add git remote for matching AOSP repository.
+- caf:      Add git remote for matching CodeAurora repository.
 - mka:      Builds using SCHED_BATCH on all processors.
 - mkap:     Builds the module(s) using mka and pushes them to the device.
 - cmka:     Cleans and builds using mka.
