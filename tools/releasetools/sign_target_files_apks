@@ -197,6 +197,11 @@ def RewriteProps(data):
       elif key == "ro.build.tags":
       if key == "ro.build.tags":
         value = EditTags(value)
+      elif key == "ro.build.display.id":
+        # change, eg, "JWR66N dev-keys" to "JWR66N"
+        value = value.split()
+        if len(value) == 2 and value[1].endswith("-keys"):
+          value = value[0]
       line = key + "=" + value
     if line != original_line:
       print "  replace: ", original_line

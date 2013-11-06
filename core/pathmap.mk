@@ -37,7 +37,6 @@ pathmap_INCL := \
     glib:external/bluetooth/glib \
     graphics:external/skia/include/core \
     libc:bionic/libc/include \
-    libdrm1:frameworks/base/media/libdrm/mobile1/include \
     libhardware:hardware/libhardware/include \
     libhardware_legacy:hardware/libhardware_legacy/include \
     libhost:build/libs/host/include \
@@ -84,11 +83,6 @@ JNI_H_INCLUDE := $(call include-path-for,libnativehelper)/nativehelper
 # A list of all source roots under frameworks/base, which will be
 # built into the android.jar.
 #
-# Note - "common" is included here, even though it is also built
-# into a static library (android-common) for unbundled use.  This
-# is so common and the other framework libraries can have mutual
-# interdependencies.
-#
 FRAMEWORKS_BASE_SUBDIRS := \
 	$(addsuffix /java, \
 	    core \
@@ -104,7 +98,6 @@ FRAMEWORKS_BASE_SUBDIRS := \
 	    telephony \
 	    wifi \
 	    keystore \
-	    fmradio \
 	 )
 
 #
