@@ -88,6 +88,11 @@ function check_product()
         TARGET_BUILD_APPS= \
         get_build_var TARGET_DEVICE > /dev/null
     # hide successful answers, but allow the errors to show
+
+    if [ "$TARGET_BUILD_VARIANT" = "user" -a -n "$RELEASE_BUILD_ID" ]
+    then
+        export BUILD_NUMBER=$RELEASE_BUILD_ID
+    fi
 }
 
 VARIANT_CHOICES=(user userdebug eng)
