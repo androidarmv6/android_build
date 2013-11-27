@@ -1493,7 +1493,6 @@ function cmremote()
     fi
     echo You can now push to "cmremote".
 }
-export -f cmremote
 
 function upstream()
 {
@@ -1555,7 +1554,6 @@ function caf()
     git remote add caf git://codeaurora.org/$PFX$PROJECT.git
     echo "Remote 'caf' created"
 }
-export -f caf
 
 function aosp()
 {
@@ -1750,7 +1748,6 @@ function tagall() {
     echo "MANIFEST: android/manifests/$R_TAG.xml"
 }
 export -f tagall
-
 
 function installboot()
 {
@@ -2328,8 +2325,10 @@ if [ "x$SHELL" != "x/bin/bash" ]; then
     case `ps -o command -p $$` in
         *bash*)
             ;;
+        *zsh*)
+            ;;
         *)
-            echo "WARNING: Only bash is supported, use of other shell would lead to erroneous results"
+            echo "WARNING: Only bash and zsh are supported, use of other shell may lead to erroneous results"
             ;;
     esac
 fi
