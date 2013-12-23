@@ -1493,6 +1493,7 @@ function cmremote()
     fi
     echo You can now push to "cmremote".
 }
+export -f cmremote
 
 function upstream()
 {
@@ -1554,6 +1555,7 @@ function caf()
     git remote add caf git://codeaurora.org/$PFX$PROJECT.git
     echo "Remote 'caf' created"
 }
+export -f caf
 
 function aosp()
 {
@@ -1748,6 +1750,85 @@ function tagall() {
     echo "MANIFEST: android/manifests/$R_TAG.xml"
 }
 export -f tagall
+
+# Create tracking branches to compare upstream changes
+# Examples:
+# updateupstream
+# updateupstream caf kitkat
+# updateupstream aosp kitkat-release
+function updateupstream() {
+    if [ ! -d .git ]
+    then
+        echo .git directory not found. Please run this from the root directory of the Android repository you wish to set up.
+    fi
+    GERRIT_REMOTE=$(cat .git/config | grep git://github.com/androidarmv6 | awk '{ print $NF }' | sed s#git://github.com/##g)
+    if [ -z "$GERRIT_REMOTE" ]
+    then
+        GERRIT_REMOTE=$(cat .git/config | grep http://github.com/androidarmv6 | awk '{ print $NF }' | sed s#http://github.com/##g)
+        if [ -z "$GERRIT_REMOTE" ]
+        then
+          return 0
+        fi
+    fi
+
+    UPSTREAM="upstream"
+    R_BRANCH="cm-11.0"
+    if [ ! -z "$1" ]
+    then
+        UPSTREAM=$1
+        $UPSTREAM
+    else
+        upstream
+    fi
+
+    if [ ! -z "$2" ]
+    then
+        R_BRANCH=$2
+    fi
+
+    pwd
+    cmremote
+    repo sync . 2> /dev/null
+    git reset --hard 2> /dev/null
+    git clean -fdx 2> /dev/null
+    repo sync . 2> /dev/null
+    git fetch $UPSTREAM refs/heads/$R_BRANCH:refs/heads/$R_BRANCH
+    repo abandon $UPSTREAM/$R_BRANCH . 2> /dev/null
+    git branch $UPSTREAM/$R_BRANCH refs/heads/$R_BRANCH
+    git push cmremote $UPSTREAM/$R_BRANCH:refs/heads/$UPSTREAM/$R_BRANCH
+    repo abandon $UPSTREAM/$R_BRANCH . 2> /dev/null
+    echo "Upstream ($UPSTREAM/$R_BRANCH) updated."
+}
+export -f updateupstream
+
+
+function updateupstreamall() {
+    if [ ! -d android ]
+    then
+      echo android directory not found.
+      return 0
+    fi
+    if [ -z "$1" ]
+    then
+      echo Remote must be specified...
+      return 0
+    fi
+    if [ -z "$2" ]
+    then
+      echo Branch must be specified...
+      return 0
+    fi
+    export R_REMOTE=$1
+    export R_BRANCH=$2
+
+    repo forall -c '
+    if [[ "$REPO_REMOTE" == "github" ]]
+    then
+      updateupstream $R_REMOTE $R_BRANCH
+    fi
+    '
+}
+export -f updateupstreamall
 
 function installboot()
 {
