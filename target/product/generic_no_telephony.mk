@@ -35,6 +35,7 @@ PRODUCT_PACKAGES := \
     Music \
     OneTimeInitializer \
     PrintSpooler \
+    Provision \
     Settings \
     SystemUI \
     TeleService \
@@ -46,7 +47,6 @@ PRODUCT_PACKAGES := \
 
 ifneq ($(MINI_GAPPS),true)
 PRODUCT_PACKAGES += \
-    Provision \
     QuickSearchBox
 endif
 
