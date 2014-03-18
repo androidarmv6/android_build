@@ -133,7 +133,11 @@ else ifeq ($(LOCAL_CERTIFICATE),PRESIGNED)
 else
   # If this is not an absolute certificate, assign it to a generic one.
   ifeq ($(dir $(strip $(LOCAL_CERTIFICATE))),./)
+    ifneq ($(OTA_PACKAGE_SIGNING_DIR),)
+      LOCAL_CERTIFICATE := $(OTA_PACKAGE_SIGNING_DIR)/$(LOCAL_CERTIFICATE)
+    else
       LOCAL_CERTIFICATE := $(dir $(DEFAULT_SYSTEM_DEV_CERTIFICATE))$(LOCAL_CERTIFICATE)
+    endif
   endif
 
   PACKAGES.$(LOCAL_MODULE).PRIVATE_KEY := $(LOCAL_CERTIFICATE).pk8
