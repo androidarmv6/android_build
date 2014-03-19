@@ -875,7 +875,7 @@ endif
 systemimage-squisher: $(INTERNAL_SYSTEMIMAGE_FILES)
 ifeq ($(TARGET_SYSTEMIMAGE_USE_SQUISHER),true)
 	@echo -e ${CL_YLW}"Running squisher..."${CL_RST}
-	$(hide) APKCERTS=$(APKCERTS_FILE) ./vendor/cm/tools/squisher
+	$(hide) APKCERTS=$(APKCERTS_FILE) TARGET_OTA_EXTRAS_FILE=$(TARGET_OTA_EXTRAS_FILE) ./vendor/cm/tools/squisher
 endif
 
 .PHONY: systemimage-squisher
