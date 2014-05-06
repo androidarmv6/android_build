@@ -531,10 +531,14 @@ def LoadSystemFiles(z):
   """Load all the files from SYSTEM/... in a given target-files
   ZipFile, and return a dict of {filename: File object}."""
   out = {}
+  extras_list = [line.strip() for line in open(OPTIONS.extras_file)]
   for info in z.infolist():
     if info.filename.startswith("SYSTEM/") and not IsSymlink(info):
       basefilename = info.filename[7:]
-      fn = "system/" + basefilename
+      if basefilename in extras_list:
+        fn = "extras/" + basefilename
+      else:
+        fn = "system/" + basefilename
       data = z.read(info.filename)
       out[fn] = common.File(fn, data)
   return out
