@@ -589,6 +589,7 @@ def WriteIncrementalOTAPackage(target_zip, source_zip, output_zip):
   diffs = []
   renames = {}
   largest_source_size = 0
+  extras_list = [line.strip() for line in open(OPTIONS.extras_file)]
 
   matching_file_cache = {}
   for fn in source_data.keys():
@@ -613,6 +614,11 @@ def WriteIncrementalOTAPackage(target_zip, source_zip, output_zip):
       # This file should be included verbatim
       if fn in OPTIONS.prohibit_verbatim:
         raise common.ExternalError("\"%s\" must be sent verbatim" % (fn,))
+      if fn.startswith("system/"):
+        basefilename = fn[7:]
+        if basefilename in extras_list:
+          print "NOT send", fn, "verbatim"
+          continue
       print "send", fn, "verbatim"
       tf.AddToZip(output_zip)
       verbatim_targets.append((fn, tf.size))
