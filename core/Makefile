@@ -1645,9 +1645,14 @@ ifneq ($(TARGET_UNIFIED_DEVICE),)
     endif
 endif
 
+ifneq ($(TARGET_NO_SEPARATE_RECOVERY),)
+    $(INTERNAL_OTA_PACKAGE_TARGET): separate_recovery := --no_separate_recovery=true
+endif
+
 ifneq ($(TARGET_OTA_EXTRAS_FILE),)
     $(INTERNAL_OTA_PACKAGE_TARGET): extras_file := --extras_file=$(TARGET_OTA_EXTRAS_FILE)
 endif
+
 
 $(INTERNAL_OTA_PACKAGE_TARGET): $(BUILT_TARGET_FILES_PACKAGE) $(DISTTOOLS)
 	@echo "$(OTA_FROM_TARGET_SCRIPT)" > $(PRODUCT_OUT)/ota_script_path
@@ -1659,7 +1664,9 @@ $(INTERNAL_OTA_PACKAGE_TARGET): $(BUILT_TARGET_FILES_PACKAGE) $(DISTTOOLS)
 	   -p $(HOST_OUT) \
 	   -k $(KEY_CERT_PAIR) \
 	   --backup=$(backuptool) $(extras_file) \
-	   --override_device=$(override_device) $(override_prop) \
+	   --override_device=$(override_device) \
+	   $(override_prop) \
+	   $(separate_recovery) \
 	   $(if $(OEM_OTA_CONFIG), -o $(OEM_OTA_CONFIG)) \
 	   $(BUILT_TARGET_FILES_PACKAGE) $@
 
