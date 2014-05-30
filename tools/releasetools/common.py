@@ -279,13 +279,13 @@ def BuildBootableImage(sourcedir, fs_config_file, info_dict=None):
   else:
     cmd = ["mkbootfs", os.path.join(sourcedir, "RAMDISK")]
   p1 = Run(cmd, stdout=subprocess.PIPE)
-  p2 = Run(["minigzip"],
+  p2 = Run([os.environ["MINIGZIP"],
            stdin=p1.stdout, stdout=ramdisk_img.file.fileno())
 
   p2.wait()
   p1.wait()
   assert p1.returncode == 0, "mkbootfs of %s ramdisk failed" % (targetname,)
-  assert p2.returncode == 0, "minigzip of %s ramdisk failed" % (targetname,)
+  assert p2.returncode == 0, "compress of %s ramdisk failed" % (targetname,)
 
   """check if uboot is requested"""
   fn = os.path.join(sourcedir, "ubootargs")
