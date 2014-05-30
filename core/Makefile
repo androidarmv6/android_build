@@ -1459,9 +1459,7 @@ ifneq ($(TARGET_UNIFIED_DEVICE),)
 endif
 
 ifneq ($(TARGET_OTA_EXTRAS_FILE),)
-    $(INTERNAL_OTA_PACKAGE_TARGET): extras_file := $(TARGET_OTA_EXTRAS_FILE)
-else
-    $(INTERNAL_OTA_PACKAGE_TARGET): extras_file := build/tools/releasetools/extras.txt
+    $(INTERNAL_OTA_PACKAGE_TARGET): extras_file := --extras_file=$(TARGET_OTA_EXTRAS_FILE)
 endif
 
 ifneq ($(TARGET_NO_SEPARATE_RECOVERY),)
@@ -1472,6 +1470,7 @@ $(INTERNAL_OTA_PACKAGE_TARGET): $(BUILT_TARGET_FILES_PACKAGE) $(DISTTOOLS)
 	@echo "$(OTA_FROM_TARGET_SCRIPT)" > $(PRODUCT_OUT)/ota_script_path
 	@echo "$(override_device)" > $(PRODUCT_OUT)/ota_override_device
 	@echo "$(extras_file)" > $(PRODUCT_OUT)/ota_extras_file
+	@echo "$(separate_recovery)" > $(PRODUCT_OUT)/ota_separate_recovery
 	@echo "$(BOARD_CUSTOM_BOOTIMG_MK)" > $(PRODUCT_OUT)/ota_custom_bootimg_mk
 	@echo -e ${CL_YLW}"Package OTA:"${CL_RST}" $@"
 	MKBOOTIMG=$(BOARD_CUSTOM_BOOTIMG_MK) \
@@ -1479,7 +1478,7 @@ $(INTERNAL_OTA_PACKAGE_TARGET): $(BUILT_TARGET_FILES_PACKAGE) $(DISTTOOLS)
 	   -p $(HOST_OUT) \
 	   -k $(KEY_CERT_PAIR) \
 	   --backup=$(backuptool) \
-	   --extras_file=$(extras_file) \
+	   $(extras_file) \
 	   --override_device=$(override_device) \
 	   $(override_prop) \
 	   $(separate_recovery) \
