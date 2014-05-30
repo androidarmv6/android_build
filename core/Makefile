@@ -556,8 +556,8 @@ $(eval $(call combine-notice-files, \
 # the module processing has already been done -- in fact, we used the
 # fact that all that has been done to get the list of modules that we
 # need notice files for.
-$(target_notice_file_html_gz): $(target_notice_file_html) | $(MINIGZIP)
-	$(hide) $(MINIGZIP) -9 < $< > $@
+$(target_notice_file_html_gz): $(target_notice_file_html) | $(REALMINIGZIP)
+	$(hide) $(REALMINIGZIP) -9 < $< > $@
 installed_notice_html_gz := $(TARGET_OUT)/etc/NOTICE.html.gz
 $(installed_notice_html_gz): $(target_notice_file_html_gz) | $(ACP)
 	$(copy-file-to-target)
