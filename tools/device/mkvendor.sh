@@ -18,6 +18,10 @@ DEVICE=$2
 BOOTIMAGE=$3
 
 UNPACKBOOTIMG=$(which unpackbootimg)
+if [ "$MINIGZIP" = "" ]
+then
+    MINIGZIP="gunzip"
+fi
 
 echo Arguments: $@
 
@@ -64,7 +68,7 @@ then
     unpackbootimg -i $BOOTIMAGEFILE > /dev/null
     mkdir ramdisk
     pushd ramdisk > /dev/null
-    gunzip -c ../$BOOTIMAGEFILE-ramdisk.gz | cpio -i
+    $MINIGZIP -c ../$BOOTIMAGEFILE-ramdisk.gz | cpio -i
     popd > /dev/null
     BASE=$(cat $TMPDIR/$BOOTIMAGEFILE-base)
     CMDLINE=$(cat $TMPDIR/$BOOTIMAGEFILE-cmdline)
