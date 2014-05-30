@@ -556,8 +556,8 @@ $(eval $(call combine-notice-files, \
 # the module processing has already been done -- in fact, we used the
 # fact that all that has been done to get the list of modules that we
 # need notice files for.
-$(target_notice_file_html_gz): $(target_notice_file_html) | $(MINIGZIP)
-	$(hide) $(MINIGZIP) -9 < $< > $@
+$(target_notice_file_html_gz): $(target_notice_file_html) | $(MINIGZIP_GZ)
+	$(hide) $(MINIGZIP_GZ) -9 < $< > $@
 installed_notice_html_gz := $(TARGET_OUT)/etc/NOTICE.html.gz
 $(installed_notice_html_gz): $(target_notice_file_html_gz) | $(ACP)
 	$(copy-file-to-target)
@@ -1433,9 +1433,9 @@ INTERNAL_OTA_PACKAGE_TARGET := $(PRODUCT_OUT)/$(name).zip
 $(INTERNAL_OTA_PACKAGE_TARGET): KEY_CERT_PAIR := $(DEFAULT_KEY_CERT_PAIR)
 
 ifeq ($(TARGET_RELEASETOOL_OTA_FROM_TARGET_SCRIPT),)
-    OTA_FROM_TARGET_SCRIPT := ./build/tools/releasetools/ota_from_target_files
+    OTA_FROM_TARGET_SCRIPT := MINIGZIP=$(MINIGZIP) ./build/tools/releasetools/ota_from_target_files
 else
-    OTA_FROM_TARGET_SCRIPT := $(TARGET_RELEASETOOL_OTA_FROM_TARGET_SCRIPT)
+    OTA_FROM_TARGET_SCRIPT := MINIGZIP=$(MINIGZIP) $(TARGET_RELEASETOOL_OTA_FROM_TARGET_SCRIPT)
 endif
 
 ifeq ($(WITH_GMS),true)
@@ -1515,9 +1515,9 @@ $(INTERNAL_UPDATE_PACKAGE_TARGET): extensions := $(TARGET_RELEASETOOLS_EXTENSION
 endif
 
 ifeq ($(TARGET_RELEASETOOL_IMG_FROM_TARGET_SCRIPT),)
-    IMG_FROM_TARGET_SCRIPT := ./build/tools/releasetools/img_from_target_files
+    IMG_FROM_TARGET_SCRIPT := MINIGZIP=$(MINIGZIP) ./build/tools/releasetools/img_from_target_files
 else
-    IMG_FROM_TARGET_SCRIPT := $(TARGET_RELEASETOOL_IMG_FROM_TARGET_SCRIPT)
+    IMG_FROM_TARGET_SCRIPT := MINIGZIP=$(MINIGZIP) $(TARGET_RELEASETOOL_IMG_FROM_TARGET_SCRIPT)
 endif
 
 $(INTERNAL_UPDATE_PACKAGE_TARGET): $(BUILT_TARGET_FILES_PACKAGE) $(DISTTOOLS)
