@@ -1476,6 +1476,7 @@ $(INTERNAL_OTA_PACKAGE_TARGET): $(BUILT_TARGET_FILES_PACKAGE) $(DISTTOOLS)
 	@echo "$(extras_file)" > $(PRODUCT_OUT)/ota_extras_file
 	@echo "$(separate_recovery)" > $(PRODUCT_OUT)/ota_separate_recovery
 	@echo "$(BOARD_CUSTOM_BOOTIMG_MK)" > $(PRODUCT_OUT)/ota_custom_bootimg_mk
+	@echo "$(MINIGZIP)" > $(PRODUCT_OUT)/ota_minigzip
 	@echo -e ${CL_YLW}"Package OTA:"${CL_RST}" $@"
 	MKBOOTIMG=$(BOARD_CUSTOM_BOOTIMG_MK) \
 	MINIGZIP=$(MINIGZIP) \
