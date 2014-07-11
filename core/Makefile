@@ -1410,6 +1410,9 @@ endif
 ifdef TARGET_UNIFIED_DEVICE
 	$(hide) echo "override_prop=true" >> $(zip_root)/META/misc_info.txt
 endif
+ifdef BUILD_NO
+	$(hide) echo "build_number=$(BUILD_NO)" >> $(zip_root)/META/misc_info.txt
+endif
 ifneq ($(TARGET_OTA_EXTRAS_FILE),)
 	$(hide) echo "extras_file=$(TARGET_OTA_EXTRAS_FILE)" >> $(zip_root)/META/misc_info.txt
 endif
