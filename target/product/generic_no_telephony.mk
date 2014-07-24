@@ -23,6 +23,7 @@ PRODUCT_PACKAGES := \
     DeskClock \
     Bluetooth \
     Calculator \
+    Calendar \
     Camera2 \
     CertInstaller \
     FusedLocation \
@@ -38,6 +39,7 @@ PRODUCT_PACKAGES := \
     Settings \
     SystemUI \
     TeleService \
+    CalendarProvider \
     bluetooth-health \
     hostapd \
     wpa_supplicant.conf \
@@ -46,10 +48,6 @@ PRODUCT_PACKAGES := \
 ifneq ($(MINI_GAPPS),true)
 PRODUCT_PACKAGES += \
     QuickSearchBox
-else
-PRODUCT_PACKAGES += \
-    Calendar \
-    CalendarProvider
 endif
 
 PRODUCT_PACKAGES += \
