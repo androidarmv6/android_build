@@ -75,7 +75,7 @@ TARGET_arm_CFLAGS :=    -O2 \
 
 # Modules can choose to compile some source as thumb.
 TARGET_thumb_CFLAGS :=  -mthumb \
-                        -Os \
+                        -O2 \
                         -fomit-frame-pointer \
                         -fno-strict-aliasing
 
@@ -93,13 +93,8 @@ ifeq ($(FORCE_ARM_DEBUGGING),true)
   TARGET_thumb_CFLAGS += -marm -fno-omit-frame-pointer
 endif
 
-ifeq ($(TARGET_DISABLE_ARM_PIE),true)
-   PIE_GLOBAL_CFLAGS :=
-   PIE_EXECUTABLE_TRANSFORM :=
-else
-   PIE_GLOBAL_CFLAGS := -fPIE
-   PIE_EXECUTABLE_TRANSFORM := -fPIE -pie
-endif
+PIE_GLOBAL_CFLAGS := -fPIE
+PIE_EXECUTABLE_TRANSFORM := -fPIE -pie
 
 android_config_h := $(call select-android-config-h,linux-arm)
 
