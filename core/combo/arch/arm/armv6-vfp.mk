@@ -23,11 +23,24 @@ endif
 # and a better solution should be found in the future.
 #
 arch_variant_cflags := \
-    -mcpu=$(TARGET_ARCH_VARIANT_CPU) \
     -mfloat-abi=softfp \
     -mfpu=$(TARGET_ARCH_VARIANT_FPU) \
     -D__ARM_ARCH_5__ \
     -D__ARM_ARCH_5T__ \
     -D__ARM_ARCH_5E__ \
-    -D__ARM_ARCH_5TE__
+    -D__ARM_ARCH_5TE__ \
+    -D__ARM_ARCH_6__ \
+    -D__ARM_ARCH_6J__ \
+    -D__ARM_ARCH_6K__
 
+# Note: If the CPU is arm1136jf-s, the compiler will treat the CPU as revision r1p0.
+# This is is problematic, as the msm7x27 series is revision r1p1 or later, which
+# prevents us from using new registers added in r1p1+. Force -march=armv6k in this case.
+#
+ifeq ($(strip $(TARGET_ARCH_VARIANT_CPU)),arm1136jf-s)
+    arch_variant_cflags += \
+        -march=armv6k
+else
+    arch_variant_cflags += \
+        -mcpu=$(TARGET_ARCH_VARIANT_CPU)
+endif
