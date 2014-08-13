@@ -1566,6 +1566,9 @@ ifneq ($(OEM_THUMBPRINT_PROPERTIES),)
 	# OTA scripts are only interested in fingerprint related properties
 	$(hide) echo "oem_fingerprint_properties=$(OEM_THUMBPRINT_PROPERTIES)" >> $(zip_root)/META/misc_info.txt
 endif
+ifdef TARGET_NO_SEPARATE_RECOVERY
+	$(hide) echo "no_separate_recovery=true" >> $(zip_root)/META/misc_info.txt
+endif
 ifdef BUILD_NO
 	$(hide) echo "build_number=$(BUILD_NO)" >> $(zip_root)/META/misc_info.txt
 endif
