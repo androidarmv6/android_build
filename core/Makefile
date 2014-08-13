@@ -1410,14 +1410,14 @@ endif
 ifdef TARGET_UNIFIED_DEVICE
 	$(hide) echo "override_prop=true" >> $(zip_root)/META/misc_info.txt
 endif
+ifdef TARGET_NO_SEPARATE_RECOVERY
+	$(hide) echo "no_separate_recovery=true" >> $(zip_root)/META/misc_info.txt
+endif
 ifdef BUILD_NO
 	$(hide) echo "build_number=$(BUILD_NO)" >> $(zip_root)/META/misc_info.txt
 endif
 ifneq ($(TARGET_OTA_EXTRAS_FILE),)
 	$(hide) echo "extras_file=$(TARGET_OTA_EXTRAS_FILE)" >> $(zip_root)/META/misc_info.txt
-endif
-ifneq ($(TARGET_NO_SEPARATE_RECOVERY),)
-	$(hide) echo "no_separate_recovery=true" >> $(zip_root)/META/misc_info.txt
 endif
 	$(hide) echo "minigzip=$(MINIGZIP)" >> $(zip_root)/META/misc_info.txt
 	$(call generate-userimage-prop-dictionary, $(zip_root)/META/misc_info.txt)
