@@ -42,7 +42,7 @@ except ImportError:
 # Parse the command line
 parser = argparse.ArgumentParser(formatter_class=argparse.RawDescriptionHelpFormatter, description=textwrap.dedent('''\
     repopick.py is a utility to simplify the process of cherry picking
-    patches from CyanogenMod's Gerrit instance.
+    patches from AndroidARMv6's Gerrit instance.
 
     Given a list of change numbers, repopick will cd into the project path
     and cherry pick the latest patch available.
@@ -187,7 +187,7 @@ while(True):
 
 # Get all commits for a specified topic
 if args.topic:
-    url = 'http://review.cyanogenmod.org/changes/?q=topic:%s' % args.topic
+    url = 'http://review.androidarmv6.org/changes/?q=topic:%s' % args.topic
     if args.verbose:
         print('Fetching all commits from topic: %s\n' % args.topic)
     f = urllib.request.urlopen(url)
@@ -252,7 +252,7 @@ for changeps in args.change_number:
     # gerrit returns two lines, a magic string and then valid JSON:
     #   )]}'
     #   [ ... valid JSON ... ]
-    url = 'http://review.cyanogenmod.org/changes/?q={change}&o={query_revision}&o=CURRENT_COMMIT&pp=0'.format(change=change, query_revision=query_revision)
+    url = 'http://review.androidarmv6.org/changes/?q={change}&o={query_revision}&o=CURRENT_COMMIT&pp=0'.format(change=change, query_revision=query_revision)
     if args.verbose:
         print('Fetching from: %s\n' % url)
     f = urllib.request.urlopen(url)
@@ -306,8 +306,13 @@ for changeps in args.change_number:
     current_revision = data['revisions'][data['current_revision']]
 
     patch_number     = target_revision['_number']
-    fetch_url        = target_revision['fetch']['anonymous http']['url']
-    fetch_ref        = target_revision['fetch']['anonymous http']['ref']
+    if 'anonymous http' in target_revision['fetch']:
+        fetch_url    = target_revision['fetch']['anonymous http']['url']
+        fetch_ref    = target_revision['fetch']['anonymous http']['ref']
+    else:
+        fetch_url    = target_revision['fetch']['http']['url']
+        fetch_ref    = target_revision['fetch']['http']['ref']
+
     author_name      = current_revision['commit']['author']['name']
     author_email     = current_revision['commit']['author']['email']
     author_date      = current_revision['commit']['author']['date'].replace(date_fluff, '')
