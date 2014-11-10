@@ -657,8 +657,8 @@ $(eval $(call combine-notice-files, \
 # the module processing has already been done -- in fact, we used the
 # fact that all that has been done to get the list of modules that we
 # need notice files for.
-$(target_notice_file_html_gz): $(target_notice_file_html) | $(MINIGZIP)
-	$(hide) $(MINIGZIP) -9 < $< > $@
+$(target_notice_file_html_gz): $(target_notice_file_html) | $(MINIGZIP_GZ)
+	$(hide) $(MINIGZIP_GZ) -9 < $< > $@
 installed_notice_html_gz := $(TARGET_OUT)/etc/NOTICE.html.gz
 $(installed_notice_html_gz): $(target_notice_file_html_gz) | $(ACP)
 	$(copy-file-to-target)
@@ -868,9 +868,8 @@ ifneq ($(OTA_PACKAGE_SIGNING_KEY),)
     PRODUCT_EXTRA_RECOVERY_KEYS := $(DEFAULT_SYSTEM_DEV_CERTIFICATE)
 else
     PRODUCT_EXTRA_RECOVERY_KEYS += \
-        build/target/product/security/cm \
-        build/target/product/security/cm-devkey \
-        build/target/product/security/bacon
+        build/target/product/security/androidarmv6 \
+        build/target/product/security/cm
 endif
 
 # Generate a file containing the keys that will be read by the
@@ -990,7 +989,15 @@ INTERNAL_SYSTEMIMAGE_FILES := $(filter $(TARGET_OUT)/%, \
     $(PDK_FUSION_SYSIMG_FILES) \
     $(RECOVERY_RESOURCE_ZIP))
 
-FULL_SYSTEMIMAGE_DEPS := $(INTERNAL_SYSTEMIMAGE_FILES) $(INTERNAL_USERIMAGES_DEPS)
+systemimage-squisher: $(INTERNAL_SYSTEMIMAGE_FILES)
+ifeq ($(TARGET_SYSTEMIMAGE_USE_SQUISHER),true)
+	@echo -e ${CL_YLW}"Running squisher..."${CL_RST}
+	$(hide) APKCERTS=$(APKCERTS_FILE) ./vendor/cm/tools/squisher
+endif
+
+.PHONY: systemimage-squisher
+
+FULL_SYSTEMIMAGE_DEPS := $(INTERNAL_SYSTEMIMAGE_FILES) $(INTERNAL_USERIMAGES_DEPS) systemimage-squisher
 # -----------------------------------------------------------------
 # installed file list
 # Depending on anything that $(BUILT_SYSTEMIMAGE) depends on.
@@ -1525,6 +1532,10 @@ endif
 ifdef BUILD_NO
 	$(hide) echo "build_number=$(BUILD_NO)" >> $(zip_root)/META/misc_info.txt
 endif
+ifneq ($(TARGET_OTA_EXTRAS_FILE),)
+	$(hide) echo "extras_file=$(TARGET_OTA_EXTRAS_FILE)" >> $(zip_root)/META/misc_info.txt
+endif
+	$(hide) echo "minigzip=$(MINIGZIP)" >> $(zip_root)/META/misc_info.txt
 	$(call generate-userimage-prop-dictionary, $(zip_root)/META/misc_info.txt)
 	$(hide) ./build/tools/releasetools/make_recovery_patch $(zip_root) $(zip_root)
 ifdef PRODUCT_DEFAULT_DEV_CERTIFICATE
@@ -1590,16 +1601,20 @@ else
     $(INTERNAL_OTA_PACKAGE_TARGET): override_device := $(TARGET_OTA_ASSERT_DEVICE)
 endif
 
+ifneq ($(TARGET_OTA_EXTRAS_FILE),)
+    $(INTERNAL_OTA_PACKAGE_TARGET): extras_file := --extras_file=$(TARGET_OTA_EXTRAS_FILE)
+endif
+
 $(INTERNAL_OTA_PACKAGE_TARGET): $(BUILT_TARGET_FILES_PACKAGE) $(DISTTOOLS)
 	@echo "$(OTA_FROM_TARGET_SCRIPT)" > $(PRODUCT_OUT)/ota_script_path
 	@echo "$(override_device)" > $(PRODUCT_OUT)/ota_override_device
 	@echo -e ${CL_YLW}"Package OTA:"${CL_RST}" $@"
-	$(hide) MKBOOTIMG=$(MKBOOTIMG) \
+	$(hide) MKBOOTIMG=$(MKBOOTIMG) MINIGZIP=$(MINIGZIP) \
 	   $(OTA_FROM_TARGET_SCRIPT) -v \
 	   --block \
 	   -p $(HOST_OUT) \
 	   -k $(KEY_CERT_PAIR) \
-	   --backup=$(backuptool) \
+	   --backup=$(backuptool) $(extras_file) \
 	   --override_device=$(override_device) \
 	   $(if $(OEM_OTA_CONFIG), -o $(OEM_OTA_CONFIG)) \
 	   $(BUILT_TARGET_FILES_PACKAGE) $@
