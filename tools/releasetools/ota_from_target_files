@@ -86,6 +86,9 @@ Usage:  ota_from_target_files [flags] input_target_files output_ota_package
   --override_device <device>
       Override device-specific asserts. Can be a comma-separated list.
 
+  --extras_file <file>
+      Extras file
+
 """
 
 import sys
@@ -134,6 +137,7 @@ OPTIONS.oem_source = None
 OPTIONS.fallback_to_full = True
 OPTIONS.backuptool = False
 OPTIONS.override_device = 'auto'
+OPTIONS.extras_file = 'build/tools/releasetools/extras.txt'
 
 def MostPopularKey(d, default):
   """Given a dict, return the key corresponding to the largest
@@ -357,6 +361,8 @@ def CopyPartitionFiles(itemset, input_zip, output_zip=None, substitute=None):
 
   partition = itemset.partition
 
+  extras_list = [line.strip() for line in open(OPTIONS.extras_file)]
+
   for info in input_zip.infolist():
     if info.filename.startswith(partition.upper() + "/"):
       basefilename = info.filename[7:]
@@ -365,7 +371,11 @@ def CopyPartitionFiles(itemset, input_zip, output_zip=None, substitute=None):
                          "/" + partition + "/" + basefilename))
       else:
         info2 = copy.copy(info)
-        fn = info2.filename = partition + "/" + basefilename
+        if basefilename in extras_list:
+          fn = info2.filename = "extras/" + basefilename
+        else:
+          fn = info2.filename = partition + "/" + basefilename
+
         if substitute and fn in substitute and substitute[fn] is None:
           continue
         if output_zip is not None:
@@ -705,10 +715,14 @@ def LoadPartitionFiles(z, partition):
   ZipFile, and return a dict of {filename: File object}."""
   out = {}
   prefix = partition.upper() + "/"
+  extras_list = [line.strip() for line in open(OPTIONS.extras_file)]
   for info in z.infolist():
     if info.filename.startswith(prefix) and not IsSymlink(info):
       basefilename = info.filename[7:]
-      fn = partition + "/" + basefilename
+      if basefilename in extras_list:
+        fn = "extras/" + basefilename
+      else:
+        fn = partition + "/" + basefilename
       data = z.read(info.filename)
       out[fn] = common.File(fn, data)
   return out
@@ -778,8 +792,9 @@ def WriteBlockIncrementalOTAPackage(target_zip, source_zip, output_zip):
       OPTIONS.source_info_dict)
   target_recovery = common.GetBootableImage(
       "/tmp/recovery.img", "recovery.img", OPTIONS.target_tmp, "RECOVERY")
-  updating_recovery = (source_recovery.data != target_recovery.data)
-
+#  updating_recovery = (source_recovery.data != target_recovery.data)
+  updating_recovery = False
+  
   system_src = GetImage("system", OPTIONS.source_tmp, OPTIONS.source_info_dict)
   system_tgt = GetImage("system", OPTIONS.target_tmp, OPTIONS.target_info_dict)
   system_diff = common.BlockDifference("system", system_tgt, system_src,
@@ -1465,6 +1480,8 @@ def main(argv):
       OPTIONS.backuptool = bool(a.lower() == 'true')
     elif o in ("--override_device"):
       OPTIONS.override_device = a
+    elif o in ("--extras_file"):
+      OPTIONS.extras_file = str(a)
     else:
       return False
     return True
@@ -1487,7 +1504,9 @@ def main(argv):
                                               "verify",
                                               "no_fallback_to_full",
                                               "backup=",
-                                              "override_device="],
+                                              "override_device=",
+                                              "extras_file="
+                                             ],
                              extra_option_handler=option_handler)
 
   if len(args) != 2:
