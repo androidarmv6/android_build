@@ -1674,6 +1674,9 @@ ifneq ($(TARGET_OTA_EXTRAS_FILE),)
     $(INTERNAL_OTA_PACKAGE_TARGET): extras_file := --extras_file=$(TARGET_OTA_EXTRAS_FILE)
 endif
 
+ifneq ($(BLOCK_BASED_OTA),false)
+    $(INTERNAL_OTA_PACKAGE_TARGET): block_based := --block
+endif
 
 $(INTERNAL_OTA_PACKAGE_TARGET): $(BUILT_TARGET_FILES_PACKAGE) $(DISTTOOLS)
 	@echo "$(OTA_FROM_TARGET_SCRIPT)" > $(PRODUCT_OUT)/ota_script_path
@@ -1681,7 +1684,7 @@ $(INTERNAL_OTA_PACKAGE_TARGET): $(BUILT_TARGET_FILES_PACKAGE) $(DISTTOOLS)
 	@echo -e ${CL_YLW}"Package OTA:"${CL_RST}" $@"
 	$(hide) MKBOOTIMG=$(MKBOOTIMG) MINIGZIP=$(MINIGZIP) \
 	   $(OTA_FROM_TARGET_SCRIPT) -v \
-	   --block \
+	   $(block_based) \
 	   -p $(HOST_OUT) \
 	   -k $(KEY_CERT_PAIR) \
 	   --backup=$(backuptool) $(extras_file) \
