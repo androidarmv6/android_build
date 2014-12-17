@@ -1321,7 +1321,8 @@ $(hide) $(PRIVATE_CXX) \
 	$(if $(PRIVATE_GROUP_STATIC_LIBRARIES),-Wl$(comma)--end-group) \
 	$(call normalize-target-libraries,$(PRIVATE_ALL_SHARED_LIBRARIES)) \
 	-o $@ \
-	$(PRIVATE_LDLIBS)
+	$(PRIVATE_LDLIBS) \
+	-lgcc
 endef
 endif
 

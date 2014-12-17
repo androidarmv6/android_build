@@ -215,7 +215,8 @@ $(hide) $(PRIVATE_CXX) \
 	$(PRIVATE_TARGET_LIBATOMIC) \
 	$(if $(PRIVATE_LIBCXX),,$(PRIVATE_TARGET_LIBGCC)) \
 	$(if $(filter true,$(PRIVATE_NO_CRT)),,$(PRIVATE_TARGET_CRTEND_SO_O)) \
-	$(PRIVATE_LDLIBS)
+	$(PRIVATE_LDLIBS) \
+	-lgcc
 endef
 
 define $(combo_2nd_arch_prefix)transform-o-to-executable-inner
