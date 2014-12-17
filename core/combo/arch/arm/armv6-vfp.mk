@@ -39,3 +39,6 @@ arch_variant_cflags += \
     -D__ARM_ARCH_6J__ \
     -D__ARM_ARCH_6K__
 
+arch_variant_ldflags := \
+    -Wl,-lgcc
+
