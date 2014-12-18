@@ -311,10 +311,11 @@ class EdifyGenerator(object):
       p = fstab[mount_point]
       partition_type = common.PARTITION_TYPES[p.fs_type]
       args = {'device': p.device, 'fn': fn}
-      if partition_type == "MTD":
-        self.script.append(
-            'write_raw_image(package_extract_file("%(fn)s"), "%(device)s");'
-            % args)
+      if partition_type == "MTD" or partition_type == "BML":
+        self.script.append((
+            'assert(package_extract_file("%(fn)s", "/tmp/%(device)s.img"),'
+            'write_raw_image("/tmp/%(device)s.img", "%(device)s"),'
+            'delete("/tmp/%(device)s.img"));') % args)
       elif partition_type == "EMMC":
         if mapfn:
           args["map"] = mapfn
