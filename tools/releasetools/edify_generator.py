@@ -315,6 +315,11 @@ class EdifyGenerator(object):
         self.script.append(
             'write_raw_image(package_extract_file("%(fn)s"), "%(device)s");'
             % args)
+      elif partition_type == "BML":
+        self.script.append((
+            'assert(package_extract_file("%(fn)s", "/tmp/%(device)s.img"),\n'
+            'write_raw_image("/tmp/%(device)s.img", "%(device)s"),\n'
+            'delete("/tmp/%(device)s.img"));') % args)
       elif partition_type == "EMMC":
         if mapfn:
           args["map"] = mapfn
